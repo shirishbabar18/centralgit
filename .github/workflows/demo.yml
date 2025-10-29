@@ -13,6 +13,11 @@ on:
           - staging
           - production
 
+      branch:
+       type: string
+       required: true
+       description: Branch to checkout code
+
 jobs:
   build:
     runs-on: ubuntu-latest
