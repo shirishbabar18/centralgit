@@ -1,0 +1,30 @@
+name: CI/CD Pipeline4
+
+on:
+  # Manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+      branch:
+       type: string
+       required: true
+       description: Branch to checkout code
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  
+      - name: Display content environment wise
+        run: |
+         echo "${{ vars.Test }}"
