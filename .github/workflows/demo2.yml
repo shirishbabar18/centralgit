@@ -30,7 +30,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "env_name=dev" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "pull_request_review" && "${{ github.event.review.state }}" == "approved" ]]; then
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "env_name=qa" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event_name }}" == "release" ]]; then
             echo "env_name=prod" >> $GITHUB_OUTPUT
@@ -57,14 +57,14 @@ jobs:
           echo "Starting deployment for $ENVIRONMENT..."
           
           if [ "$ENVIRONMENT" = "dev" ]; then
-            echo "Deploying to DEV..."
+            echo "${{ vars.Test }}"
             # your dev deploy logic here (e.g., copy to dev S3, or Netlify)
           
           elif [ "$ENVIRONMENT" = "qa" ]; then
-            echo "Deploying to QA..."
+            echo "${{ vars.Test }}"
             # your QA deploy logic here
           
-          elif [ "$ENVIRONMENT" = "prod" ]; then
-            echo "Deploying to PROD..."
+          elif [ "$ENVIRONMENT" = "production" ]; then
+            echo "${{ vars.Test }}"
             # your production deploy logic here
           fi
