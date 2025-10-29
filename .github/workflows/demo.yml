@@ -1,31 +1,43 @@
-name: CI/CD Pipeline
+name: Unified React App Deployment
 
 on:
-  # Manual trigger from GitHub UI
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - qa
-          - production
-
-      branch:
-       type: string
-       required: true
-       description: Branch to checkout code
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+
+    # Step 1: Determine environment name dynamically
+    outputs:
+      environment_name: ${{ steps.detect.outputs.environment_name }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4  
-      - name: Display content environment wise
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect Deployment Environment
+        id: detect
         run: |
-         echo "${{ vars.Test }}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "environment_name=dev" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment_name=qa" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "release" ] && [ "${{ github.event.action }}" == "published" ]; then
+            echo "environment_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown event, skipping."
+            exit 1
+          fi
+
+      - name: Set environment
+        run: echo "Deploying to environment:${{ steps.detect.outputs.environment_name }}"
+
+      - name: display 
+        run: "echo ${{vars.Test}}"
