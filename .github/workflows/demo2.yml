@@ -1,7 +1,4 @@
-
-
 name: Manual Deployment
-
 on:
   # Manual trigger from GitHub UI
   workflow_dispatch:
