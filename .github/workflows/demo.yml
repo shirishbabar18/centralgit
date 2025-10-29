@@ -26,4 +26,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4  
       - name: Display content environment wise
-        run: echo "${{ vars.Test }}
+        run: |
+         echo "${{ vars.Test }}
