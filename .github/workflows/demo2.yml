@@ -1,29 +1,74 @@
-name: Manual Deployment
-on:
-  # Manual trigger from GitHub UI
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
+name: Unified Deploy Pipeline
 
-      branch:
-       type: string
-       required: true
-       description: Branch to checkout code
+on:
+  # When a PR is opened or updated → Dev deploy
+  pull_request:
+   types: [opened, synchronize]
+
+  # When a PR is approved → QA deploy
+  push:
+    branches:
+     - main/**
+
+  # When a release is created → Prod deploy
+  release:
+    types: [published]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+
+    environment: ${{ steps.set-env.outputs.env_name }}
+
+    # Ensure only 1 job runs for any of these triggers
+    concurrency: deploy-${{ github.ref }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  
-      - name: Display content environment wise
+        uses: actions/checkout@v4
+
+      - name: Determine deployment environment
+        id: set-env
         run: |
-         echo "${{ vars.Test }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "env_name=dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "env_name=qa" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "env_name=prod" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if no valid environment
+        if: steps.set-env.outputs.env_name == 'none'
+        run: echo "No valid event type, skipping deploy."
+
+      - name: Display selected environment
+        if: steps.set-env.outputs.env_name != 'none'
+        run: echo "Deploying to ${{ steps.set-env.outputs.env_name }} environment"
+
+      # -------------------------------
+      # 🔽 Single shared deploy stage
+      # -------------------------------
+      - name: Deploy React App
+        if: steps.set-env.outputs.env_name != 'none'
+        env:
+          ENVIRONMENT: ${{ steps.set-env.outputs.env_name }}
+          TEST_VAR: ${{ vars.Test }}
+        run: |
+          echo "Starting deployment for $ENVIRONMENT..."
+          echo "Environment Test variable value: $TEST_VAR"
+          
+          if [ "$ENVIRONMENT" = "dev" ]; then
+            echo "${{ vars.Test }}"
+            # your dev deploy logic here (e.g., copy to dev S3, or Netlify)
+          
+          elif [ "$ENVIRONMENT" = "qa" ]; then
+            echo "${{ vars.Test }}"
+            # your QA deploy logic here
+          
+          elif [ "$ENVIRONMENT" = "production" ]; then
+            echo "${{ vars.Test }}"
+            # your production deploy logic here
+          fi
