@@ -1,27 +1,21 @@
 name: Manual Deployment
 
 on:
-  # Manual trigger from GitHub UI
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
+  pull_request:
+   branches: 
+    - main/**
+   types: [opened, synchronize]
+  push:
+   branches:
+    - main/**
 
-      branch:
-       type: string
-       required: true
-       description: Branch to checkout code
+  release:
+   types: [published]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    #environment: ${{ github.event.inputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4  
