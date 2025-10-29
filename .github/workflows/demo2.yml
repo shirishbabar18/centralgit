@@ -54,8 +54,6 @@ jobs:
           ENVIRONMENT: ${{ steps.set-env.outputs.env_name }}
         run: |
           echo "Starting deployment for $ENVIRONMENT..."
-          npm ci
-          npm run build
           
           if [ "$ENVIRONMENT" = "dev" ]; then
             echo "Deploying to DEV..."
