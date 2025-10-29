@@ -3,11 +3,14 @@ name: Unified Deploy Pipeline
 on:
   # When a PR is opened or updated → Dev deploy
   pull_request:
-    types: [opened, synchronize, reopened]
+   branches:
+    - main/**
+   types: [opened, synchronize]
 
   # When a PR is approved → QA deploy
-  pull_request_review:
-    types: [submitted]
+  push:
+    branches:
+     - main/**
 
   # When a release is created → Prod deploy
   release:
