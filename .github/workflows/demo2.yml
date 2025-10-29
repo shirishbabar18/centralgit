@@ -1,4 +1,4 @@
-name: CI/CD Pipeline2
+name: Manual Deployment
 
 on:
   # Manual trigger from GitHub UI
