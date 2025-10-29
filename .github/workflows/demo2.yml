@@ -18,6 +18,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    environment: ${{ steps.set-env.outputs.env_name }}
+
     # Ensure only 1 job runs for any of these triggers
     concurrency: deploy-${{ github.ref }}
 
@@ -53,8 +55,10 @@ jobs:
         if: steps.set-env.outputs.env_name != 'none'
         env:
           ENVIRONMENT: ${{ steps.set-env.outputs.env_name }}
+          TEST_VAR: ${{ vars.Test }}
         run: |
           echo "Starting deployment for $ENVIRONMENT..."
+          echo "Environment Test variable value: $TEST_VAR"
           
           if [ "$ENVIRONMENT" = "dev" ]; then
             echo "${{ vars.Test }}"
