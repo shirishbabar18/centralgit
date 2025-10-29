@@ -1,24 +1,71 @@
-name: Manual Deployment
+name: Unified Deploy Pipeline
 
 on:
+  # When a PR is opened or updated → Dev deploy
   pull_request:
-   branches: 
-    - main/**
-   types: [opened, synchronize]
-  push:
-   branches:
-    - main/**
+    types: [opened, synchronize, reopened]
 
+  # When a PR is approved → QA deploy
+  pull_request_review:
+    types: [submitted]
+
+  # When a release is created → Prod deploy
   release:
-   types: [published]
+    types: [published]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    #environment: ${{ github.event.inputs.environment }}
+
+    # Ensure only 1 job runs for any of these triggers
+    concurrency: deploy-${{ github.ref }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  
-      - name: Display content environment wise
+        uses: actions/checkout@v4
+
+      - name: Determine deployment environment
+        id: set-env
         run: |
-         echo "${{ vars.Test }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "env_name=dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request_review" && "${{ github.event.review.state }}" == "approved" ]]; then
+            echo "env_name=qa" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "env_name=prod" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if no valid environment
+        if: steps.set-env.outputs.env_name == 'none'
+        run: echo "No valid event type, skipping deploy."
+
+      - name: Display selected environment
+        if: steps.set-env.outputs.env_name != 'none'
+        run: echo "Deploying to ${{ steps.set-env.outputs.env_name }} environment"
+
+      # -------------------------------
+      # 🔽 Single shared deploy stage
+      # -------------------------------
+      - name: Deploy React App
+        if: steps.set-env.outputs.env_name != 'none'
+        env:
+          ENVIRONMENT: ${{ steps.set-env.outputs.env_name }}
+        run: |
+          echo "Starting deployment for $ENVIRONMENT..."
+          npm ci
+          npm run build
+          
+          if [ "$ENVIRONMENT" = "dev" ]; then
+            echo "Deploying to DEV..."
+            # your dev deploy logic here (e.g., copy to dev S3, or Netlify)
+          
+          elif [ "$ENVIRONMENT" = "qa" ]; then
+            echo "Deploying to QA..."
+            # your QA deploy logic here
+          
+          elif [ "$ENVIRONMENT" = "prod" ]; then
+            echo "Deploying to PROD..."
+            # your production deploy logic here
+          fi
