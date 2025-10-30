@@ -15,29 +15,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Step 1: Determine environment name dynamically
-    outputs:
-      environment_name: ${{ steps.detect.outputs.environment_name }}
+    # Map trigger → environment
+    strategy:
+      matrix:
+        include:
+          - condition: github.event_name == 'pull_request'
+            env_name: dev
+          - condition: >
+              github.event_name == 'push'
+            env_name: qa
+          - condition: github.event_name == 'release'
+            env_name: production
+
+    # Only run the one that matches the condition
+    if: ${{ fromJSON(matrix.condition) }}
+
+    environment: ${{ matrix.env_name }}
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Detect Deployment Environment
-        id: detect
+      - name: Deploy
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "environment_name=dev" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "environment_name=qa" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" == "release" ] && [ "${{ github.event.action }}" == "published" ]; then
-            echo "environment_name=production" >> $GITHUB_OUTPUT
-          else
-            echo "Unknown event, skipping."
-            exit 1
-          fi
-
-      - name: Set environment
-        run: echo "Deploying to environment:${{ steps.detect.outputs.environment_name }}"
-
-      - name: display 
-        run: "echo ${{vars.Test}}"
+          echo "Deploying to ${{ matrix.env_name }} environment..."
+          echo "${{ vars.Test }}"
