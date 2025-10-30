@@ -1,4 +1,4 @@
-name: Unified React App Deployment
+name: App Deployment
 
 on:
   pull_request:
