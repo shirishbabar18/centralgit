@@ -17,6 +17,7 @@ jobs:
       - name: Create env file
         run: |
           echo "TEST=${{ vars.TEST }}" >> test.txt
+          cat test.txt  # to verify the content
 
       - name: Deploy
         run: |
