@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Create env file
+        run: |
+          echo "TEST=${{ vars.TEST }}" >> test.txt
 
       - name: Deploy
         run: |
