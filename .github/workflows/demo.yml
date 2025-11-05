@@ -21,6 +21,7 @@ jobs:
    - name: Replace variables in process.env and settings.env
      run: |
       echo "VAR=${{ vars.VAR }}" >> app/process.env
+      echo "VAR=${{ vars.VAR }}" >> $GITHUB_ENV
       cat app/process.env
     
 #  pull_request:
