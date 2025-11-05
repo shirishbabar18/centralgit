@@ -1,32 +1,54 @@
 name: App Deployment
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
+ workflow_dispatch:
+  inputs:
+   environment:
+    description: 'Select environment'
+    required: true
+    type: choice
+    options:
+     - dev
+     - qa
+     - production
+
+jobs:
+ deploy:
+  runs-on: ubuntu-latest
+  environment: ${{ github.event.inputs.environment }}
+  steps:
+   - name: Checkout repo
+     run: actions/checkout@v4
+   - name: Replace variables in process.env and settings.env
+     run: |
+      echo "VAR=${{ vars.VAR }}" >> app/process.env
+    
+#  pull_request:
+#    branches:
+#      - main
+#    types: [opened, synchronize, reopened]
 #  push:
 #    branches:
 #      - main
-  release:
-    types: [published]
+#  release:
+#    types: [published]
+#
+#jobs:
+#  deploy-dev:
+#    if: github.event_name == 'pull_request'
+#    uses: ./.github/workflows/template.yml
+#    with:
+#      environment: dev
 
-jobs:
-  deploy-dev:
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/template.yml
-    with:
-      environment: dev
+#  deploy-qa:
+#   if: github.event_name == 'push'
+#   uses: ./.github/workflows/template.yml
+#   with:
+#      environment: qa
 
-  deploy-qa:
-   if: github.event_name == 'push'
-   uses: ./.github/workflows/template.yml
-   with:
-      environment: qa
-
-  deploy-prod:
-    if: github.event_name == 'release'
-    uses: ./.github/workflows/template.yml
-    with:
-      environment: production
-    
+#  deploy-prod:
+#    if: github.event_name == 'release'
+#    uses: ./.github/workflows/template.yml
+#    with:
+#      environment: production
+#    
