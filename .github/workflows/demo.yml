@@ -17,8 +17,7 @@ jobs:
   runs-on: ubuntu-latest
   environment: ${{ github.event.inputs.environment }}
   steps:
- #  - name: Checkout repo
- #    run: actions/checkout@v4
+   - uses: actions/checkout@v4
    - name: Replace variables in process.env and settings.env
      run: |
       echo "VAR=${{ vars.VAR }}" >> app/process.env
