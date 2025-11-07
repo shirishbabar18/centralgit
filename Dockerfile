@@ -1,4 +1,3 @@
 FROM alpine:latest
-WORKDIR app
 COPY . .
-RUN cat process.env
+RUN cat app/process.env
