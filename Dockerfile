@@ -1,3 +1,3 @@
 FROM alpine:latest
-COPY app/process.env .
+COPY . .
 RUN cat process.env
