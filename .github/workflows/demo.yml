@@ -12,6 +12,11 @@ on:
      - qa
      - production
 
+   rollack_tag:
+     type: string
+     required: false
+     description: "Image taf to rollback to"
+
 jobs:
  deploy:
   runs-on: ubuntu-latest
