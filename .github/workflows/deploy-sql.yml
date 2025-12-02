@@ -1,0 +1,8 @@
+name: Deploy SQL Scripts
+
+on:
+  workflow_dispatch:  
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
